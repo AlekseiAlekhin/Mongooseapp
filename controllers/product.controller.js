@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
 
-exports.getAllProducts = async function(req, res, next){
+exports.getUsersProducts = async function(req, res, next){
     try {
         const product = await Product.find({})
         return res.json(product)
@@ -62,7 +62,7 @@ exports.product_delete = function(req,res,next){
 
 exports.productDeleteAll = async function(req,res,next){
     try{
-        const product = await Product.deleteMany({isChecked: true})
+        await Product.deleteMany({isChecked: true})
         return res.send('Deleted successfully!')
     }catch (e){
         return next(e);
@@ -81,7 +81,10 @@ exports.userId = async function(req, res, next){
 exports.userCreate = async function(req, res, next){
     const {userName, password} = req.body;
     try {
-        if(!(await User.findOne({userName: userName}))){
+        if((await User.findOne({userName: userName}))) {
+            return res.json('уже есть, все хуйня, давай еще раз')
+
+        }
         const user = new User(
             {
                 userName,
@@ -90,21 +93,25 @@ exports.userCreate = async function(req, res, next){
         );
         await user.save()
         return res.json('nice')
-        }return res.json('уже есть, все хуйня, давай еще раз')
+
     } catch (e) {
         return next(e)
     }
 }
 
-exports.getUser = async function(req, res, next){
-    const {userName, password} = req.body;
+exports.getUser = async(req, res, next)=>{
+    const {userName, password} = req.query;
     try {
-        const user = await User.findOne({userName: userName})
-        if(user === null){
+        const user = (await User.findOne({userName: userName}));
+        console.log(user.userName)
+        const isValidPassword =await bcrypt.compare(password, user.password)
+        if(!user){
             return res.status(400).json('invalid username, fuck you')
         }
-        if( await bcrypt.compare(password, user.password)){
-            return res.json(jwt.sign(user.password,'shhhg'))
+        if(isValidPassword){
+            const token = jwt.sign(user.password,'shhhg')
+            console.log(user);
+            return res.json({userName: user.userName,token: token})
         }
         return res.status(403).json('invalid token')
     } catch (e) {
