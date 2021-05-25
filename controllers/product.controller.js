@@ -98,7 +98,7 @@ exports.userCreate = async function(req, res, next){
         );
         await user.save()
 
-        return res.json('nice')
+        return res.json({userName: user.userName, token: jwt.sign(user.password, 'shhhg')})
 
     } catch (e) {
         return next(e)
