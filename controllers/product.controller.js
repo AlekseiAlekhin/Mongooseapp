@@ -7,8 +7,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.getUsersProducts = async function(req, res, next){
+    const userName = req.query
     try {
-        const product = await Product.find({})
+        const product = await Product.find({userName: userName.userName})
+        console.log(userName);
         return res.json(product)
     } catch (e) {
         return next(e)
@@ -16,12 +18,13 @@ exports.getUsersProducts = async function(req, res, next){
 }
 
 exports.product_create = async function (req, res, next) {
-    const {text} = req.body;
+    const {text, userName} = req.body;
 
     try {
         const product = new Product(
             {
                 text,
+                userName,
             }
         );
         await product.save()
@@ -80,11 +83,13 @@ exports.userId = async function(req, res, next){
 
 exports.userCreate = async function(req, res, next){
     const {userName, password} = req.body;
+    console.log(password)
     try {
         if((await User.findOne({userName: userName}))) {
             return res.json('уже есть, все хуйня, давай еще раз')
 
         }
+
         const user = new User(
             {
                 userName,
@@ -92,6 +97,7 @@ exports.userCreate = async function(req, res, next){
             }
         );
         await user.save()
+
         return res.json('nice')
 
     } catch (e) {
