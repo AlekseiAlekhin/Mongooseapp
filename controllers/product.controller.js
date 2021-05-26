@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
 
+const _ = require('lodash')
+
 exports.getUsersProducts = async function(req, res, next){
     const userName = req.query
     try {
@@ -83,22 +85,23 @@ exports.userId = async function(req, res, next){
 
 exports.userCreate = async function(req, res, next){
     const {userName, password} = req.body;
+
     console.log(password)
     try {
-        if((await User.findOne({userName: userName}))) {
-            return res.json('уже есть, все хуйня, давай еще раз')
+        const user = await User.findOne({userName: userName})
+        if(user) {
+            return res.status(400)
 
         }
-
-        const user = new User(
+        const newUser = new User(
             {
                 userName,
                 password: await bcrypt.hash(password, 10)
             }
         );
-        await user.save()
+        await newUser.save()
 
-        return res.json('nice')
+        return res.status(200)
 
     } catch (e) {
         return next(e)
@@ -107,19 +110,35 @@ exports.userCreate = async function(req, res, next){
 
 exports.getUser = async(req, res, next)=>{
     const {userName, password} = req.query;
+    console.log(req.query)
     try {
         const user = (await User.findOne({userName: userName}));
-        console.log(user.userName)
         const isValidPassword =await bcrypt.compare(password, user.password)
         if(!user){
-            return res.status(400).json('invalid username, fuck you')
+            return res.status(401).json('invalid username, fuck you')
         }
         if(isValidPassword){
-            const token = jwt.sign(user.password,'shhhg')
-            console.log(user);
+            const token = jwt.sign(user._id.toString(),'shhhg')
             return res.json({userName: user.userName,token: token})
         }
-        return res.status(403).json('invalid token')
+        return res.status(401).json('invalid token')
+    } catch (e) {
+        return next(e)
+    }
+}
+
+exports.chekToken = async(req, res, next)=>{
+    const {token} = req.query;
+    try {
+        const payload = await jwt.verify(token, 'shhhg')
+        const user = await User.findById(payload)
+        console.log('some user',payload)
+        if(!user){
+            return res.status(401).json('invalid username, fuck you')
+        }
+        const newToken = jwt.sign(user._id.toString(),'shhhg')
+        console.log(user);
+        return res.json({userName: user.userName,token: newToken})
     } catch (e) {
         return next(e)
     }

@@ -13,5 +13,6 @@ router.get('/userId', product_controller.userId)
 
 router.post('/createUser', product_controller.userCreate)
 router.get('/getUser', product_controller.getUser)
+router.get('/chekToken', product_controller.chekToken)
 
 module.exports = router;
