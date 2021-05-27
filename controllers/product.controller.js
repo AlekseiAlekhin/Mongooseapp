@@ -6,8 +6,9 @@ const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
 
-const _ = require('lodash')
-
+// todo изменить названия
+// todo сделать нормальные сообщения на ответы. напр: успешный: {message: сообщение, data: данные} провал: {message: ошибка, error: меседж ошибки
+// todo убрать консоль логи
 exports.getUsersProducts = async function(req, res, next){
     const userName = req.query
     try {
@@ -58,6 +59,7 @@ exports.productUpdateAll = async function(req, res, next){
 }
 
 exports.product_delete = function(req,res,next){
+    // todo изменить на асинхронную функцию
     Product.findByIdAndRemove(req.params.id)
         .then(()=>{
             return res.send('Deleted successfully!');
@@ -118,7 +120,7 @@ exports.getUser = async(req, res, next)=>{
             return res.status(401).json('invalid username, fuck you')
         }
         if(isValidPassword){
-            const token = jwt.sign(user._id.toString(),'shhhg')
+            const token = jwt.sign(user._id.toString(),'shhhg') // todo добавить нормальный ключ и прокидывать его через env
             return res.json({userName: user.userName,token: token})
         }
         return res.status(401).json('invalid token')
