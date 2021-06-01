@@ -2,9 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Joi = require('joi')
 
-
-// todo изменить на const
-let UserSchema = new Schema({
+const UserSchema = new Schema({
     userName: Joi.string()
         .alphanum()
         .min(3)
